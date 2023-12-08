@@ -19,6 +19,8 @@ PARSER PaymentsJournal
 # BUS_ADD <название дополнительного потока> <объект / модуль / дополнительный модуль из класса парсера>
 # BUS_ADD s_download PARSER/SOURCE_PARSER_CLASS/nasty_download
 
+INIT driver WebDriver
+
 # Тут указывается класс парсера и метод, который платформа будет вызывать
 # START <название класса парсера> <метод, который должен вернуть список документов>
 START PaymentsJournal content
