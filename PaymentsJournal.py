@@ -83,10 +83,10 @@ class PaymentsJournal:
             "https://www.paymentsjournal.com/news/")  # Открыть первую страницу с материалами EMVCo в браузере
         time.sleep(10)
 
-        #Cooskies
+        # Cooskies
         try:
             cookies_btn = self.driver.find_element(By.ID, 'normal-slidedown').find_element(By.XPATH,
-                                                                                            '//*[@id="onesignal-slidedown-allow-button"]')
+                                                                                           '//*[@id="onesignal-slidedown-allow-button"]')
             self.driver.execute_script('arguments[0].click()', cookies_btn)
             self.logger.info('Cookies убран')
         except:
@@ -96,23 +96,22 @@ class PaymentsJournal:
         self.logger.info('Прекращен поиск Cookies')
         time.sleep(3)
 
-        #try:
-            # Get scroll height
+        # try:
+        # Get scroll height
         #    last_height = self.driver.execute_script("return document.body.scrollHeight")
 
         #    while True:
-                # Scroll down to bottom
+        # Scroll down to bottom
         #        self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
 
-                # Wait to load page
+        # Wait to load page
         #        time.sleep(0.5)
 
-                # Calculate new scroll height and compare with last scroll height
+        # Calculate new scroll height and compare with last scroll height
         #        new_height = self.driver.execute_script("return document.body.scrollHeight")
         #        if new_height == last_height:
         #            break
         #        last_height = new_height
-
 
         #        try:
         #            reg_btn = self.driver.find_element(By.CLASS_NAME, 'dialog-widget-content').find_element(
@@ -127,16 +126,15 @@ class PaymentsJournal:
         #        self.logger.info('Прекращен поиск окна регистрации')
         #        time.sleep(3)
 
-        #except Exception as e:
+        # except Exception as e:
         #    self.logger.exception('Не удалось найти scroll')
-
 
         flag = True
         while flag:
             self.driver.execute_script("window.scrollBy(0,document.body.scrollHeight)")
             self.logger.debug('Загрузка списка элементов...')
             doc_table = self.driver.find_element(By.CLASS_NAME, 'jeg_posts ').find_elements(By.TAG_NAME,
-                                                                                                   'article')
+                                                                                            'article')
             self.logger.debug(f'Обработка списка элементов ({len(doc_table)})...')
 
             # Цикл по всем строкам таблицы элементов на текущей странице
@@ -146,12 +144,11 @@ class PaymentsJournal:
 
                 try:
                     title = element.find_element(By.CLASS_NAME, 'jeg_post_title').text
-                    #title = element.find_element(By.XPATH, '//*[@id="feed-item-title-1"]/a').text
+                    # title = element.find_element(By.XPATH, '//*[@id="feed-item-title-1"]/a').text
 
                 except:
                     self.logger.exception('Не удалось извлечь title')
                     title = ' '
-
 
                 try:
                     other_data = element.find_element(By.CLASS_NAME, "by").text
@@ -159,14 +156,14 @@ class PaymentsJournal:
                     self.logger.exception('Не удалось извлечь other_data')
                     other_data = ''
                 try:
-                    date = element.find_element(By.CLASS_NAME, 'jeg_meta_date').text
+                    date = dateparser.parse(element.find_element(By.CLASS_NAME, 'jeg_meta_date').text)
                 except:
                     self.logger.exception('Не удалось извлечь date')
                     date = ' '
 
-                #try:
+                # try:
                 #    date = dateparser.parse(date_text)
-                #except:
+                # except:
                 #    self.logger.exception('Не удалось извлечь date')
                 #    date = None
 
@@ -200,19 +197,19 @@ class PaymentsJournal:
             counter = 0
 
             try:
-            # Get scroll height
+                # Get scroll height
                 last_height = self.driver.execute_script("return document.body.scrollHeight")
 
                 while True:
-            # Scroll down to bottom
+                    # Scroll down to bottom
                     self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                     counter += 1
                     print(counter)
 
-            # Wait to load page
+                    # Wait to load page
                     time.sleep(0.5)
 
-            #Calculate new scroll height and compare with last scroll height
+                    # Calculate new scroll height and compare with last scroll height
                     new_height = self.driver.execute_script("return document.body.scrollHeight")
                     if new_height == last_height:
                         break
@@ -238,7 +235,7 @@ class PaymentsJournal:
                 self.logger.exception('Не удалось найти scroll')
                 break
 
-            #try:
+            # try:
             #    pagination_arrow = self.driver.find_element(By.XPATH, '//a[contains(@data-direction,\'next\')]')
             #    self.driver.execute_script('arguments[0].click()', pagination_arrow)
             #    time.sleep(3)
@@ -249,8 +246,7 @@ class PaymentsJournal:
             #                     self.logger.info('Выполнен переход на 6-ую страницу. Принудительное завершение парсинга.')
             #                     break
 
-
-            #try:
+            # try:
             #    while self.driver.find_element(By.TAG_NAME,'div'):
             #        self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             #        Divs = self.driver.find_element(By.TAG_NAME,'div').text
@@ -260,16 +256,15 @@ class PaymentsJournal:
             #            break
             #        else:
             #            continue
-            #except:
+            # except:
             #    self.logger.exception('Не удалось найти переход на след. страницу. Прерывание цикла обработки')
             #    break
 
         # Логирование найденного документа
-            #self.logger.info(self._find_document_text_for_logger(_content_document))
+        # self.logger.info(self._find_document_text_for_logger(_content_document))
 
         # ---
         # ========================================
-
 
     @staticmethod
     def _find_document_text_for_logger(doc: SPP_document):
