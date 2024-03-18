@@ -213,7 +213,7 @@ class PaymentsJournal:
                     new_height = self.driver.execute_script("return document.body.scrollHeight")
                     if new_height == last_height:
                         break
-                    if counter > 5:
+                    if counter > 100:
                         flag = False
                         break
                     last_height = new_height
