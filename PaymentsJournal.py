@@ -13,6 +13,8 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 from src.spp.types import SPP_document
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+
+
 class PaymentsJournal:
     """
     Класс парсера плагина SPP
@@ -30,8 +32,8 @@ class PaymentsJournal:
     HOST = "https://www.paymentsjournal.com/news/"
     _content_document: list[SPP_document]
 
-    def __init__(self, webdriver: WebDriver, last_document: SPP_document = None, max_count_documents: int = 100, *args,
-                 **kwargs):
+    def __init__(self, webdriver: WebDriver, last_document: SPP_document = None, max_count_documents: int = 100,
+                 num_scrolls: int = 25, *args, **kwargs):
         """
         Конструктор класса парсера
 
@@ -45,6 +47,7 @@ class PaymentsJournal:
         self.wait = WebDriverWait(self.driver, timeout=20)
         self.max_count_documents = max_count_documents
         self.last_document = last_document
+        self.num_scrolls = num_scrolls
 
         # Логер должен подключаться так. Вся настройка лежит на платформе
         self.logger = logging.getLogger(self.__class__.__name__)
@@ -80,7 +83,7 @@ class PaymentsJournal:
         # Тут должен находится блок кода, отвечающий за парсинг конкретного источника
         # -
 
-        self.driver.get(self.HOST)  # Открыть первую страницу с материалами EMVCo в браузере
+        self.driver.get(self.HOST)  # Открыть первую страницу с материалами в браузере
         time.sleep(3)
 
         # Cookies
@@ -88,46 +91,13 @@ class PaymentsJournal:
             cookies_btn = self.driver.find_element(By.ID, 'normal-slidedown').find_element(By.XPATH,
                                                                                            '//*[@id="onesignal-slidedown-allow-button"]')
             self.driver.execute_script('arguments[0].click()', cookies_btn)
-            self.logger.info('Cookies убран')
+            self.logger.debug('Cookies убран')
         except:
-            self.logger.exception('Не найден cookies')
+            self.logger.debug('Не найден cookies')
             pass
 
-        self.logger.info('Прекращен поиск Cookies')
+        self.logger.debug('Прекращен поиск Cookies')
         time.sleep(3)
-
-        # try:
-        # Get scroll height
-        #    last_height = self.driver.execute_script("return document.body.scrollHeight")
-
-        #    while True:
-        # Scroll down to bottom
-        #        self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-
-        # Wait to load page
-        #        time.sleep(0.5)
-
-        # Calculate new scroll height and compare with last scroll height
-        #        new_height = self.driver.execute_script("return document.body.scrollHeight")
-        #        if new_height == last_height:
-        #            break
-        #        last_height = new_height
-
-        #        try:
-        #            reg_btn = self.driver.find_element(By.CLASS_NAME, 'dialog-widget-content').find_element(
-        #                By.XPATH,
-        #                '//*[@id="elementor-popup-modal-433761"]/div/a')
-        #            self.driver.execute_script('arguments[0].click()', reg_btn)
-        #            self.logger.info('Окно регистрации убрано')
-        #        except:
-        #            self.logger.exception('Не найдено окно регистрации')
-        #            pass
-
-        #        self.logger.info('Прекращен поиск окна регистрации')
-        #        time.sleep(3)
-
-        # except Exception as e:
-        #    self.logger.exception('Не удалось найти scroll')
 
         flag = True
         while flag:
@@ -137,7 +107,7 @@ class PaymentsJournal:
             counter = 0
 
             try:
-                # Get scroll height
+
                 doc_table = self.driver.find_elements(By.TAG_NAME, 'article')
                 last_doc_table_len = len(doc_table)
 
@@ -145,15 +115,16 @@ class PaymentsJournal:
                     # Scroll down to bottom
                     self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                     counter += 1
-                    self.logger.info(f"counter = {counter}")
+                    # self.logger.info(f"counter = {counter}")
 
                     # Wait to load page
                     time.sleep(1)
 
                     try:
-                        self.driver.execute_script('arguments[0].click()', self.driver.find_element(By.XPATH, '//*[contains(@class,\'dialog-close-button\')]'))
+                        self.driver.execute_script('arguments[0].click()', self.driver.find_element(By.XPATH,
+                                                                                                    '//*[contains(@class,\'dialog-close-button\')]'))
                     except:
-                        self.logger.exception('Не найдена реклама')
+                        self.logger.debug('Не найдена реклама')
 
                     # Wait to load page
                     time.sleep(1)
@@ -163,34 +134,30 @@ class PaymentsJournal:
                     # Wait to load page
                     time.sleep(1)
 
-                    # Calculate new scroll height and compare with last scroll height
                     doc_table = self.driver.find_elements(By.TAG_NAME, 'article')
                     new_doc_table_len = len(doc_table)
                     if last_doc_table_len == new_doc_table_len:
                         break
-                    if counter > 1:
+                    if counter > self.num_scrolls:
                         flag = False
                         break
-
 
                     try:
                         reg_btn = self.driver.find_element(By.CLASS_NAME, 'dialog-widget-content').find_element(
                             By.XPATH,
                             '//*[@id="elementor-popup-modal-433761"]/div/a')
                         reg_btn.click()
-                        self.logger.info('Окно регистрации убрано')
+                        # self.logger.debug('Окно регистрации убрано')
                     except:
                         # self.logger.exception('Не найдено окно регистрации')
                         pass
 
-                    self.logger.info('Прекращен поиск окна регистрации')
+                    # self.logger.debug('Прекращен поиск окна регистрации')
                     time.sleep(3)
 
             except Exception as e:
-                self.logger.exception('Не удалось найти scroll')
+                self.logger.debug('Не удалось найти scroll')
                 break
-
-
 
             self.logger.debug(f'Обработка списка элементов ({len(doc_table)})...')
 
@@ -208,15 +175,19 @@ class PaymentsJournal:
                     continue
 
                 try:
-                    web_link = element.find_element(By.CLASS_NAME, 'jeg_post_title').find_element(By.TAG_NAME, 'a').get_attribute('href')
+                    web_link = element.find_element(By.CLASS_NAME, 'jeg_post_title').find_element(By.TAG_NAME,
+                                                                                                  'a').get_attribute(
+                        'href')
                 except:
                     self.logger.exception('Не удалось извлечь web_link')
                     web_link = None
 
                 try:
-                    other_data = {'author': element.find_element(By.CLASS_NAME, "jeg_meta_author").find_element(By.TAG_NAME, 'a').text}
+                    other_data = {
+                        'author': element.find_element(By.CLASS_NAME, "jeg_meta_author").find_element(By.TAG_NAME,
+                                                                                                      'a').text}
                 except:
-                    self.logger.exception('Не удалось извлечь other_data')
+                    self.logger.debug('Не удалось извлечь other_data')
                     other_data = {}
 
                 self.driver.execute_script("window.open('');")
@@ -234,7 +205,7 @@ class PaymentsJournal:
                 try:
                     text_content = dateparser.parse(self.driver.find_element(By.CLASS_NAME, 'content-inner ').text)
                 except:
-                    self.logger.exception('Не удалось извлечь text')
+                    self.logger.debug('Не удалось извлечь text')
                     continue
 
                 abstract = ''
