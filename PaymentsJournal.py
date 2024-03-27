@@ -203,7 +203,7 @@ class PaymentsJournal:
                     continue
 
                 try:
-                    text_content = dateparser.parse(self.driver.find_element(By.CLASS_NAME, 'content-inner ').text)
+                    text_content = self.driver.find_element(By.CLASS_NAME, 'content-inner ').text
                 except:
                     self.logger.debug('Не удалось извлечь text')
                     continue
